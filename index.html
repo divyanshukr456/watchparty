@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WatchSync — Watch Together, Stay in Sync</title>
+    <meta name="description" content="Watch YouTube videos together with up to 4 people. End-to-end encrypted chat. No sign-up required.">
+
+    <!-- Security -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://unpkg.com https://www.youtube.com https://s.ytimg.com 'unsafe-inline';
+        style-src 'self' https://fonts.googleapis.com https://cdnjs.cloudflare.com 'unsafe-inline';
+        font-src https://fonts.gstatic.com https://cdnjs.cloudflare.com;
+        frame-src https://www.youtube.com https://www.youtube-nocookie.com;
+        img-src 'self' https://img.youtube.com https://i.ytimg.com data:;
+        connect-src 'self' https://0.peerjs.com wss://0.peerjs.com;
+        object-src 'none';
+        base-uri 'self';
+        form-action 'none';
+    ">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ═══════ Animated BG ═══════ -->
+    <div class="bg-effects">
+        <div class="bg-gradient"></div>
+        <div class="bg-dots"></div>
+        <div class="bg-glow bg-glow-1"></div>
+        <div class="bg-glow bg-glow-2"></div>
+    </div>
+
+    <!-- ═══════ LANDING SCREEN ═══════ -->
+    <div class="screen active" id="screen-landing">
+        <div class="landing">
+            <div class="landing-hero">
+                <div class="logo-large">
+                    <div class="logo-icon-lg">
+                        <i class="fas fa-play"></i>
+                        <div class="logo-ring"></div>
+                    </div>
+                    <h1>Watch<span>Sync</span></h1>
+                </div>
+                <p class="tagline">Watch YouTube together with friends. <br>End-to-end encrypted chat. No sign-up.</p>
+                <div class="trust-badges">
+                    <span><i class="fas fa-shield-alt"></i> E2E Encrypted</span>
+                    <span><i class="fas fa-users"></i> Up to 4 People</span>
+                    <span><i class="fas fa-bolt"></i> Peer-to-Peer</span>
+                </div>
+            </div>
+
+            <div class="landing-cards">
+                <!-- Create Room Card -->
+                <div class="action-card" id="card-create">
+                    <div class="card-icon create-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h2>Create a Room</h2>
+                    <p>Start a watch party and invite your friends</p>
+
+                    <div class="form-group">
+                        <label for="create-name">Your Name</label>
+                        <input type="text" id="create-name" placeholder="Enter your name" maxlength="20" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Party Size</label>
+                        <div class="size-picker" id="size-picker">
+                            <button class="size-btn" data-size="2">
+                                <i class="fas fa-user-friends"></i>
+                                <span>2</span>
+                            </button>
+                            <button class="size-btn active" data-size="3">
+                                <i class="fas fa-users"></i>
+                                <span>3</span>
+                            </button>
+                            <button class="size-btn" data-size="4">
+                                <i class="fas fa-users-cog"></i>
+                                <span>4</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" id="btn-create-room">
+                        <i class="fas fa-rocket"></i> Create Room
+                    </button>
+                </div>
+
+                <!-- Join Room Card -->
+                <div class="action-card" id="card-join">
+                    <div class="card-icon join-icon">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h2>Join a Room</h2>
+                    <p>Enter a room code to join a watch party</p>
+
+                    <div class="form-group">
+                        <label for="join-name">Your Name</label>
+                        <input type="text" id="join-name" placeholder="Enter your name" maxlength="20" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="join-code">Room Code</label>
+                        <input type="text" id="join-code" placeholder="e.g. ABCD-1234" maxlength="9" autocomplete="off" style="text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">
+                    </div>
+
+                    <button class="btn-primary join-btn" id="btn-join-room">
+                        <i class="fas fa-door-open"></i> Join Room
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ LOBBY SCREEN (waiting for players) ═══════ -->
+    <div class="screen" id="screen-lobby">
+        <div class="lobby">
+            <div class="lobby-header">
+                <div class="logo-small">
+                    <div class="logo-icon-sm"><i class="fas fa-play"></i></div>
+                    <span>Watch<strong>Sync</strong></span>
+                </div>
+                <button class="btn-leave" id="btn-leave-lobby" title="Leave Room">
+                    <i class="fas fa-sign-out-alt"></i> Leave
+                </button>
+            </div>
+
+            <div class="lobby-content">
+                <div class="lobby-code-card">
+                    <h2>Your Room is Ready!</h2>
+                    <p>Share this code with your friends:</p>
+                    <div class="room-code-display">
+                        <span id="lobby-room-code">XXXX-XXXX</span>
+                        <button class="btn-copy" id="btn-copy-code" title="Copy Code">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="encryption-badge">
+                        <i class="fas fa-lock"></i>
+                        <span>Chat is end-to-end encrypted with AES-256-GCM</span>
+                    </div>
+                </div>
+
+                <div class="lobby-players">
+                    <h3>Players <span id="lobby-player-count">1</span> / <span id="lobby-max-players">3</span></h3>
+                    <div class="player-slots" id="player-slots">
+                        <!-- Filled dynamically -->
+                    </div>
+                    <div class="lobby-waiting" id="lobby-waiting">
+                        <div class="dot-pulse"><span></span><span></span><span></span></div>
+                        <p>Waiting for friends to join...</p>
+                    </div>
+                </div>
+
+                <button class="btn-primary btn-start" id="btn-start-party" disabled>
+                    <i class="fas fa-play-circle"></i> Start Watch Party
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════ ROOM SCREEN (watch party) ═══════ -->
+    <div class="screen" id="screen-room">
+        <div class="room">
+            <!-- Top Bar -->
+            <div class="room-topbar">
+                <div class="logo-small">
+                    <div class="logo-icon-sm"><i class="fas fa-play"></i></div>
+                    <span>Watch<strong>Sync</strong></span>
+                </div>
+                <div class="room-info">
+                    <span class="room-code-tag" id="room-code-tag">XXXX-XXXX</span>
+                    <span class="room-players-tag" id="room-players-tag">
+                        <i class="fas fa-users"></i> <span id="room-active-count">1</span>
+                    </span>
+                    <span class="encryption-tag"><i class="fas fa-lock"></i> E2E</span>
+                </div>
+                <button class="btn-leave" id="btn-leave-room" title="Leave Room">
+                    <i class="fas fa-sign-out-alt"></i> Leave
+                </button>
+            </div>
+
+            <!-- Main area: Video + Chat -->
+            <div class="room-body" id="room-body">
+                <!-- Video Panel -->
+                <div class="video-panel" id="video-panel">
+                    <div class="video-container" id="video-container">
+                        <div class="video-placeholder" id="video-placeholder">
+                            <i class="fab fa-youtube"></i>
+                            <h3>Paste a YouTube URL to start watching</h3>
+                            <p>The host controls playback for everyone</p>
+                        </div>
+                        <div id="yt-player-wrapper" style="display:none;">
+                            <div id="yt-player"></div>
+                        </div>
+                    </div>
+                    <div class="video-controls" id="video-controls">
+                        <div class="video-url-bar">
+                            <i class="fab fa-youtube"></i>
+                            <input type="text" id="video-url-input" placeholder="Paste YouTube URL here..." maxlength="200" autocomplete="off">
+                            <button class="btn-load-video" id="btn-load-video" title="Load Video">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="chat-panel" id="chat-panel">
+                    <div class="chat-header">
+                        <h3><i class="fas fa-comments"></i> Chat</h3>
+                        <span class="chat-encrypted"><i class="fas fa-lock"></i> Encrypted</span>
+                    </div>
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-system-msg" id="chat-welcome">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Messages are end-to-end encrypted. Only people in this room can read them.</span>
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-input" placeholder="Type a message..." maxlength="500" autocomplete="off">
+                        <button class="btn-send" id="btn-send" title="Send">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast container -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- PeerJS for WebRTC -->
+    <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="app.js"></script>
+</body>
+</html>
